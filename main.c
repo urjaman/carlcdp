@@ -1,4 +1,5 @@
 #include "main.h"
+#include <avr/power.h>
 #include "uart.h"
 #include "console.h"
 #include "appdb.h"
