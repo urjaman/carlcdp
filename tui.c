@@ -403,7 +403,7 @@ static void tui_draw_mainpage(uint8_t forced) {
 	}
 	// Line 0
 	memset(line,' ',16);
-	d = tui_run_mod(tui_mp_mods[0][tui_mp_modidx[0]],buf,8);
+	d = tui_run_mod(tui_mp_mods[0][tui_mp_modidx[0]],buf,10);
 	memcpy(line,buf,d);
 	d = tui_run_mod(tui_mp_mods[1][tui_mp_modidx[1]],buf,15-d);
 	memcpy(&(line[16-d]),buf,d);
@@ -411,7 +411,7 @@ static void tui_draw_mainpage(uint8_t forced) {
 	lcd_puts(line);
 	// Line 1
 	memset(line,' ',16);
-	d = tui_run_mod(tui_mp_mods[2][tui_mp_modidx[2]],buf,8);
+	d = tui_run_mod(tui_mp_mods[2][tui_mp_modidx[2]],buf,10);
 	memcpy(line,buf,d);
 	d = tui_run_mod(tui_mp_mods[3][tui_mp_modidx[3]],buf,15-d);
 	memcpy(&(line[16-d]),buf,d);

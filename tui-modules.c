@@ -5,8 +5,9 @@
 #include "timer.h"
 #include "dallas.h"
 #include "batlvl.h"
+#include "lib.h"
 
-#define TUI_MOD_CNT 19
+#define TUI_MOD_CNT 20
 static uint8_t tui_mbv_mod(uint8_t* buf, uint8_t max);
 static uint8_t tui_sbv_mod(uint8_t* buf, uint8_t max);
 static uint8_t tui_rlst_mod(uint8_t* buf, uint8_t max);
@@ -19,6 +20,9 @@ static uint8_t tui_date_mod(uint8_t* buf, uint8_t ml);
 static uint8_t tui_alarm_mod(uint8_t* buf, uint8_t ml);
 static uint8_t tui_dtwd_mod(uint8_t* buf, uint8_t ml);
 static uint8_t tui_gbv_mod(uint8_t* buf, uint8_t ml, uint8_t c1, uint8_t c2, uint16_t v);
+
+static uint8_t tui_lifetimer_mod(uint8_t* buf, uint8_t max);
+
 
 static const unsigned char nullstr[] PROGMEM = "-NONE-";
 static const unsigned char mbistr[] PROGMEM = "MAIN BAT VOLTS";
@@ -35,12 +39,16 @@ static const unsigned char datestr[] PROGMEM = "DATE YY-MM-DD";
 static const unsigned char alarmstr[] PROGMEM = "ALARM INFO";
 static const unsigned char dtwdstr[] PROGMEM = "DATE WD,MM-DD";
 
+
 static const unsigned char mbvrppstr[] PROGMEM = "MAIN BAT RIPPLE";
 static const unsigned char sbvrppstr[] PROGMEM = "SEC BAT RIPPLE";
 static const unsigned char mbvmaxstr[] PROGMEM = "MAIN BAT VMAX";
 static const unsigned char sbvmaxstr[] PROGMEM = "SEC BAT VMAX";
 static const unsigned char mbvminstr[] PROGMEM = "MAIN BAT VMIN";
 static const unsigned char sbvminstr[] PROGMEM = "SEC BAT VMIN";
+
+static const unsigned char lifetmrstr[] PROGMEM = "LIFE TIMER";
+
 
 PGM_P const tui_mods_table[] PROGMEM = {
     (PGM_P)nullstr,
@@ -62,7 +70,8 @@ PGM_P const tui_mods_table[] PROGMEM = {
     (PGM_P)mbvmaxstr,
     (PGM_P)sbvmaxstr,
     (PGM_P)mbvminstr,
-    (PGM_P)sbvminstr
+    (PGM_P)sbvminstr,
+    (PGM_P)lifetmrstr,
 
 };
 
@@ -96,6 +105,7 @@ uint8_t tui_run_mod(uint8_t mod, uint8_t *p, uint8_t ml) {
 		case 16: return tui_gbv_mod(p,ml,'S','+',adc_read_maxv(ADC_CH_SB));
 		case 17: return tui_gbv_mod(p,ml,'M','-',adc_read_minv(ADC_CH_MB));
 		case 18: return tui_gbv_mod(p,ml,'S','-',adc_read_minv(ADC_CH_SB));
+		case 19: return tui_lifetimer_mod(p, ml);
 
 	}
 }
@@ -387,5 +397,30 @@ static uint8_t tui_temp_mod(uint8_t* buf, uint8_t ml, uint8_t idx) {
 static uint8_t tui_alarm_mod(uint8_t* buf, uint8_t ml) {
 	uint8_t mb[9];
 	uint8_t x = tui_alarm_mod_str(mb);
+	return tui_modfinish(buf,mb,ml,x);
+}
+
+
+void timer_get_time(struct mtm *tm);
+uint8_t timer_time_isvalid(void);
+
+
+static uint8_t tui_lifetimer_mod(uint8_t* buf, uint8_t ml) {
+	const struct mtm death = { 2066 - TIME_EPOCH_YEAR, 6, 6, 18, 0, 0 };
+	struct mtm now;
+	uint8_t x = 0;
+	uint8_t mb[11];
+	if (timer_time_isvalid()) {
+		const uint32_t deathsec = mtm2linear(&death);
+		timer_get_time(&now);
+		uint32_t nowsec = mtm2linear(&now);
+		if (nowsec > deathsec) {
+			mb[0] = ':';
+			mb[1] = '(';
+			x = 2;
+		} else {
+			x = luint2str(mb, deathsec - nowsec);
+		}
+	}
 	return tui_modfinish(buf,mb,ml,x);
 }

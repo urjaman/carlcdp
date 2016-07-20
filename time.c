@@ -44,7 +44,7 @@ uint8_t month_days(uint8_t year, uint8_t month) {
 	return 30; // Error, but we will just roll with the average.
 }
 
-uint32_t mtm2linear(struct mtm * tm) {
+uint32_t mtm2linear(const struct mtm * tm) {
 	uint32_t counter = mtm2lindate(tm);
 	counter *= 24; // to hours
 	counter += tm->hour;
@@ -55,7 +55,7 @@ uint32_t mtm2linear(struct mtm * tm) {
 	return counter;
 }
 
-uint24_t mtm2lindate(struct mtm *tm) {
+uint24_t mtm2lindate(const struct mtm *tm) {
 	uint24_t counter;
 	int8_t leaps=0;
 	/* Based on the fact that our epoc is at a conjuction of the leap cycles... */
