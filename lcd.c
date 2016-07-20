@@ -125,7 +125,7 @@ lcd_init(void)
   lcd_program_char((PGM_P)lcd_dl_sign,3);   /* DL arrow at index 3 (or 11) */
   lcd_program_char((PGM_P)lcd_dr_sign,4);   /* DR arrow at index 4 (or 12) */
   
-  /* Go to the corner... */
+  /* Go to the corner... :) */
   lcd_gotoxy(0,0);
   
 }
