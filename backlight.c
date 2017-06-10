@@ -123,6 +123,13 @@ void backlight_activate(void) {
 }
 
 void backlight_run(void) {
+	if (timer_get_1hzp()) { // secondly main voltage monitoring for BL contrast emergency mode ;)
+		if (adc_read_mb() < adc_from_dV(700)) { // less than 7.0V means voltage supply is unreliable, set maximum contrast
+			OCR0B = 0;
+		} else {
+			OCR0B = bl_contrast_value;
+		}
+	}
 	if (bl_lock) return;
 	uint32_t diff = timer_get() - bl_last_sec;
 	if (diff >= bl_to) {
