@@ -5,7 +5,7 @@
 #include "cron.h"
 #include "powermgmt.h"
 
-#define IDLE_TIMEOUT 60
+#define IDLE_TIMEOUT 5
 
 /* This part is the non-calendar/date/time-related part. Just uptimer, etc. */
 uint8_t timer_waiting=0;
@@ -33,6 +33,7 @@ static uint16_t timer_gen_5hzp(void) {
 
 void timer_activity(void) {
 	timer_idle_since = secondstimer;
+	timer_system_idle = 0;
 }
 
 void timer_delay_us(uint24_t us) {
@@ -73,6 +74,7 @@ void timer_run(void) {
 			uint32_t diff = secondstimer - timer_idle_since;
 			timer_system_idle = (diff > IDLE_TIMEOUT);
 		}
+		if (buttons_get_v()) timer_system_idle = 0;
 		uint16_t ss = timer_gen_5hzp();
 		if (timer_5hzp) {
 			timer5hz++;
