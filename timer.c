@@ -5,7 +5,7 @@
 #include "cron.h"
 #include "powermgmt.h"
 
-#define IDLE_TIMEOUT 5
+#define IDLE_TIMEOUT 60
 
 /* This part is the non-calendar/date/time-related part. Just uptimer, etc. */
 uint8_t timer_waiting=0;
