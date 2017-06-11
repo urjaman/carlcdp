@@ -84,7 +84,6 @@ ISR(WDT_vect) {
 	subsectimer = ss;
 }
 
-#define LPM_TIMEOUT 5
 extern volatile uint16_t adc_isr_out_cnt;
 
 void low_power_mode(void) {
@@ -94,8 +93,6 @@ void low_power_mode(void) {
 	if (!timer_get_idle()) goto idle;
 	PORTC |= _BV(2);
 	SMCR = _BV(SM1) | _BV(SE); /* sleep enable and set mode */
-	DDRD &= ~_BV(5); // CONTRAST-DRIVE OFF
-	EIFR = 3;
 	EIMSK = 3;
 	WDTCSR |= _BV(WDIE); /* Enable WDT for timing. */
 	sei();
@@ -103,7 +100,6 @@ void low_power_mode(void) {
 	EIMSK = 0;
 	SMCR = 0; /* sleep disable */
 	WDTCSR &= ~_BV(WDIE); /* Stop the WDT timing. */
-	DDRD |= _BV(5); // CONTRAST-DRIVE ON
 	PORTC &= ~_BV(2);
 	return;
 
