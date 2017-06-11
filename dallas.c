@@ -368,6 +368,7 @@ void dallas_init(void) {
 }
 
 void dallas_run(void) {
+	if (timer_get_idle()) return; /* No point in polling the temperatures all the time... */
 	d1w_run += timer_get_1hzp();
 	if (buttons_get_v()) goto exit; // Will not run when User is using the device.
 #if D1W_SCAN_INTERVAL
