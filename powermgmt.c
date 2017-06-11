@@ -86,13 +86,12 @@ ISR(WDT_vect) {
 
 #define LPM_TIMEOUT 5
 extern volatile uint16_t adc_isr_out_cnt;
-extern uint32_t timer_idle_since;
 
 void low_power_mode(void) {
 	cli();
 	if (adc_isr_out_cnt < 5) goto idle;
-	uint32_t diff = timer_get() - timer_idle_since;
-	if (diff < LPM_TIMEOUT) goto idle;
+	/* Uhh, if we are not idle, use the "idle" sleep mode instead of power-down. */
+	if (!timer_get_idle()) goto idle;
 	PORTC |= _BV(2);
 	SMCR = _BV(SM1) | _BV(SE); /* sleep enable and set mode */
 	DDRD &= ~_BV(5); // CONTRAST-DRIVE OFF

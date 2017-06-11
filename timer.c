@@ -5,6 +5,8 @@
 #include "cron.h"
 #include "powermgmt.h"
 
+#define IDLE_TIMEOUT 5
+
 /* This part is the non-calendar/date/time-related part. Just uptimer, etc. */
 uint8_t timer_waiting=0;
 static uint8_t timer_1hzp=0; // 1 HZ Pulse, 0/1
@@ -12,7 +14,8 @@ static uint8_t timer_5hzp=0; // 5 HZ Pulse
 static uint32_t secondstimer=0;
 static uint8_t timer5hz=0; // Linear 8-bit counter at 5hz, rolls over every 51s.
 static uint8_t timer5hz_todo=0; // Used to fix linear counter if a 5hz pulse is missed.
-uint32_t timer_idle_since=0;
+static uint32_t timer_idle_since=0;
+static uint8_t timer_system_idle=0;
 
 static uint16_t timer_gen_5hzp(void) {
 	static uint8_t state=0;
@@ -67,6 +70,8 @@ void timer_run(void) {
 			cron_initialize();
 			timer_time_tick();
 			ncront = cron_next_task();
+			uint32_t diff = secondstimer - timer_idle_since;
+			timer_system_idle = (diff > IDLE_TIMEOUT);
 		}
 		uint16_t ss = timer_gen_5hzp();
 		if (timer_5hzp) {
@@ -82,6 +87,9 @@ void timer_run(void) {
 	}
 }
 
+uint8_t timer_get_idle(void) {
+	return timer_system_idle;
+}
 
 uint32_t timer_get(void) {
 	return secondstimer;
