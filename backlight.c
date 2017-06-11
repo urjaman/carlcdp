@@ -120,6 +120,7 @@ void backlight_activate(void) {
 	bl_last_sec = timer_get();
 	bl_v_fadeto = bl_value;
 	backlight_fader();
+	timer_activity();
 }
 
 void backlight_run(void) {
@@ -131,15 +132,19 @@ void backlight_run(void) {
 		}
 	}
 	if (bl_lock) return;
-	uint32_t diff = timer_get() - bl_last_sec;
-	if (diff >= bl_to) {
-		if (relay_get_autodecision() == RLY_MODE_ON) {
-			bl_v_fadeto = bl_drv_value;
+	if (timer_get_1hzp()) {
+		uint32_t diff = timer_get() - bl_last_sec;
+		if (diff >= bl_to) {
+			if (relay_get_autodecision() == RLY_MODE_ON) {
+				bl_v_fadeto = bl_drv_value;
+				timer_activity();
+			} else {
+				bl_v_fadeto = -1;
+			}
 		} else {
-			bl_v_fadeto = -1;
+			bl_v_fadeto = bl_value;
+			timer_activity();
 		}
-	} else {
-		bl_v_fadeto = bl_value;
 	}
 	backlight_fader();
 }

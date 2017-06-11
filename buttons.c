@@ -21,10 +21,11 @@ uint8_t buttons_get(void) {
 	uint8_t v = buttons_get_v();
 	if (!v) return 0;
 	backlight_activate();
-	timer_delay_ms(180);
+	timer_delay_ms(100);
+	timer_delay_ms(100);
 	for(;;) {
 		uint8_t sv;
-		timer_delay_ms(32);
+		timer_delay_ms(40);
 		sv = buttons_get_v();
 		if (sv == v){
 			return v;

@@ -10,7 +10,7 @@ volatile uint8_t timer_run_todo=0;
 
 ISR(TIMER0_OVF_vect, ISR_NAKED) {
 	asm volatile (
-	".lcomm subsectimer,2\n\t"
+	".comm subsectimer,2\n\t"
 	"push r1\n\t"
 	"in r1, __SREG__\n\t"
 	"push r24\n\t"

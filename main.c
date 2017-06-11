@@ -15,6 +15,7 @@
 #include "dallas.h"
 #include "batlvl.h"
 #include "i2c.h"
+#include "powermgmt.h"
 
 #ifdef ENABLE_UARTIF
 #define RECVBUFLEN 64
@@ -64,6 +65,7 @@ void main (void) __attribute__ ((noreturn));
 
 void main(void) {
 	cli();
+	pm_init();
 	clock_prescale_set(clock_div_1);
 	noints();
 	i2c_init(); // It will need to be before uart_init eventually

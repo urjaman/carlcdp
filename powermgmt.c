@@ -8,6 +8,8 @@
 #include "i2c.h"
 #include "rtc.h"
 #include "saver.h"
+#include "powermgmt.h"
+#include <avr/wdt.h>
 
 /* This is sort of a TUI-related but not just UI module, so decided to call it just poweroff. */
 /* What we are doing would be called suspend-to-ram in the PC world, but for UI simplicity I'll call it poweroff... */
@@ -55,4 +57,60 @@ void tui_poweroff(void) {
 		tui_time_print(passed);
 		tui_waitforkey();
 	}
+}
+
+void pm_init(void) {
+	/* This sequence both turns off WDT reset mode and sets the period to 125ms */
+	wdt_reset();
+	MCUSR &= ~_BV(WDRF);
+	WDTCSR = _BV(WDCE) | _BV(WDE);
+	WDTCSR = _BV(WDIF) | _BV(WDP1) | _BV(WDP0);
+	DDRC |= _BV(2);
+	PORTC &= ~_BV(2);
+}
+
+extern volatile uint16_t subsectimer;
+extern volatile uint8_t timer_run_todo;
+ISR(WDT_vect) {
+	/* Add 125ms to the system timers... You're not supposed to do this ;p */
+	WDTCSR |= _BV(WDIF);
+	const uint16_t addcnt = SSTC/8;
+	uint24_t ss = subsectimer;
+	ss += addcnt;
+	if (ss >= SSTC) {
+		ss -= SSTC;
+		timer_run_todo++;
+	}
+	subsectimer = ss;
+}
+
+#define LPM_TIMEOUT 5
+extern volatile uint16_t adc_isr_out_cnt;
+extern uint32_t timer_idle_since;
+
+void low_power_mode(void) {
+	cli();
+	if (adc_isr_out_cnt < 5) goto idle;
+	uint32_t diff = timer_get() - timer_idle_since;
+	if (diff < LPM_TIMEOUT) goto idle;
+	PORTC |= _BV(2);
+	SMCR = _BV(SM1) | _BV(SE); /* sleep enable and set mode */
+	DDRD &= ~_BV(5); // CONTRAST-DRIVE OFF
+	EIFR = 3;
+	EIMSK = 3;
+	WDTCSR |= _BV(WDIE); /* Enable WDT for timing. */
+	sei();
+	sleep_cpu();
+	EIMSK = 0;
+	SMCR = 0; /* sleep disable */
+	WDTCSR &= ~_BV(WDIE); /* Stop the WDT timing. */
+	DDRD |= _BV(5); // CONTRAST-DRIVE ON
+	PORTC &= ~_BV(2);
+	return;
+
+idle:
+	SMCR = _BV(SE);
+	sei();
+	sleep_cpu();
+	SMCR = 0; /* sleep_disable */
 }

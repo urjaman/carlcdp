@@ -3,6 +3,7 @@
 #include "buttons.h"
 #include "rtc.h"
 #include "cron.h"
+#include "powermgmt.h"
 
 /* This part is the non-calendar/date/time-related part. Just uptimer, etc. */
 uint8_t timer_waiting=0;
@@ -11,6 +12,7 @@ static uint8_t timer_5hzp=0; // 5 HZ Pulse
 static uint32_t secondstimer=0;
 static uint8_t timer5hz=0; // Linear 8-bit counter at 5hz, rolls over every 51s.
 static uint8_t timer5hz_todo=0; // Used to fix linear counter if a 5hz pulse is missed.
+uint32_t timer_idle_since=0;
 
 static uint16_t timer_gen_5hzp(void) {
 	static uint8_t state=0;
@@ -24,6 +26,10 @@ static uint16_t timer_gen_5hzp(void) {
 		state++;
 	}
 	return rv;
+}
+
+void timer_activity(void) {
+	timer_idle_since = secondstimer;
 }
 
 void timer_delay_us(uint24_t us) {
@@ -72,7 +78,7 @@ void timer_run(void) {
 			timer_waiting=0;
 			break;
 		}
-		sleep_mode();
+		low_power_mode();
 	}
 }
 
