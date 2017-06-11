@@ -76,8 +76,8 @@ static void tui_alarm_active_f(uint8_t init) {
 	}
 	// 3 units of beep, 2 of nonbeep. State 0 1 2 ; 3 4, >=5 => 0.
 	switch (alarm_state) {
-		case 2: if (intensity<2) { tui_alarm_setstate(0); break; }
-		case 1: if (intensity<1) { tui_alarm_setstate(0); break; }
+		case 2: if (intensity<2) { tui_alarm_setstate(0); break; } /* FALL-THROUGH */
+		case 1: if (intensity<1) { tui_alarm_setstate(0); break; } /* FALL-THROUGH */
 		case 0:
 			tui_alarm_setstate((intensity==3)?2:1);
 			break;
